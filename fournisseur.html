@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Facture Fournisseurs - Solar Edge</title>
+<style>
+body{font-family: Arial, sans-serif;margin:20px;background:#f5f5f5;}
+.invoice-container{background:#fff;padding:20px;max-width:950px;margin:auto;border-radius:10px;box-shadow:0 0 10px rgba(0,0,0,0.15);}
+.header{display:flex;justify-content:space-between;align-items:center;}
+h1{color:#ff7b00;margin:0;}
+table{width:100%;border-collapse:collapse;margin-top:15px;}
+th,td{border:1px solid #ccc;padding:6px;font-size:14px;text-align:center;}
+th{background:#0b3d91;color:white;}
+td input{width:95%;border:none;text-align:center;}
+.final{font-weight:bold;background:#e0e0e0;}
+button{background:#ff7b00;color:white;border:none;padding:6px 12px;margin:5px;border-radius:6px;cursor:pointer;}
+button:hover{background:#e56e00;}
+.totals{margin-top:20px;width:50%;float:right;}
+.totals td{border:none;font-size:15px;padding:4px;}
+</style>
+</head>
+<body>
+
+<div class="invoice-container">
+<h1>Facture Fournisseurs - Solar Edge</h1>
+
+<!-- FORMULAIRE POUR AJOUTER UN FOURNISSEUR -->
+<div>
+<label>Nom Société :</label><input type="text" id="nomSociete">
+<label>Matricule :</label><input type="text" id="matricule">
+<label>Date :</label><input type="date" id="dateFournisseur"><br>
+<label>Montant HT :</label><input type="number" id="htFournisseur" value="0">
+<label>TVA (%) :</label><input type="number" id="tvaFournisseur" value="19"><br>
+<label>RIB :</label><input type="text" id="ribFournisseur">
+<button onclick="addFournisseur()">➕ Ajouter Fournisseur</button>
+</div>
+
+<!-- TABLEAU FOURNISSEURS -->
+<table id="fournTable">
+<thead>
+<tr>
+<th>Nom Société</th>
+<th>Matricule</th>
+<th>Date</th>
+<th>RIB</th>
+<th>Montant HT</th>
+<th>TVA %</th>
+<th>Total TTC</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<!-- Fournisseurs ajoutés ici -->
+</tbody>
+</table>
+
+<!-- TOTALS -->
+<div class="totals">
+<table>
+<tr><td>Total HT :</td><td id="totalHT">0.00 DT</td></tr>
+<tr><td>Total TVA :</td><td id="totalTVA">0.00 DT</td></tr>
+<tr class="final"><td>Total TTC :</td><td id="totalTTC">0.00 DT</td></tr>
+</table>
+</div>
+
+<div style="clear:both"></div>
+<button onclick="calculateAll()">🔢 Recalculer Tous</button>
+<button onclick="window.print()">🖨️ Imprimer / PDF</button>
+
+</div>
+
+<script>
+function addFournisseur(){
+    const nom = document.getElementById("nomSociete").value;
+    const matricule = document.getElementById("matricule").value;
+    const date = document.getElementById("dateFournisseur").value;
+    const ht = parseFloat(document.getElementById("htFournisseur").value)||0;
+    const tva = parseFloat(document.getElementById("tvaFournisseur").value)||0;
+    const rib = document.getElementById("ribFournisseur").value;
+
+    const tbody = document.querySelector("#fournTable tbody");
+    const row = tbody.insertRow();
+    row.innerHTML = `
+        <td><input type="text" value="${nom}"></td>
+        <td><input type="text" value="${matricule}"></td>
+        <td><input type="date" value="${date}"></td>
+        <td><input type="text" value="${rib}"></td>
+        <td><input type="number" value="${ht}" onchange="calculateAll()"></td>
+        <td><input type="number" value="${tva}" onchange="calculateAll()"></td>
+        <td><input type="number" value="0" readonly></td>
+        <td><button onclick="deleteRow(this)">❌</button></td>
+    `;
+    calculateAll();
+}
+
+function deleteRow(btn){
+    btn.parentNode.parentNode.remove();
+    calculateAll();
+}
+
+function calculateAll(){
+    let totalHT = 0;
+    let totalTVA = 0;
+    let totalTTC = 0;
+
+    document.querySelectorAll("#fournTable tbody tr").forEach(row=>{
+        const ht = parseFloat(row.cells[4].querySelector("input").value)||0;
+        const tva = parseFloat(row.cells[5].querySelector("input").value)||0;
+        const tvaAmount = ht*(tva/100);
+        const ttc = ht + tvaAmount;
+
+        row.cells[6].querySelector("input").value = ttc.toFixed(2);
+
+        totalHT += ht;
+        totalTVA += tvaAmount;
+        totalTTC += ttc;
+    });
+
+    document.getElementById("totalHT").textContent = totalHT.toFixed(2)+" DT";
+    document.getElementById("totalTVA").textContent = totalTVA.toFixed(2)+" DT";
+    document.getElementById("totalTTC").textContent = totalTTC.toFixed(2)+" DT";
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Devis PV - Solar Edge</title>
+
+<style>
+body{
+    font-family: Arial, sans-serif;
+    margin:20px;
+    background:#f5f5f5;
+}
+
+.invoice-container{
+    background:#fff;
+    padding:20px;
+    max-width:1000px;
+    margin:auto;
+    border-radius:10px;
+    box-shadow:0 0 10px rgba(0,0,0,0.15);
+}
+
+.header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.logo-section{
+    width:180px;
+}
+
+#logo{
+    max-width:160px;
+    max-height:100px;
+}
+
+.company-info{
+    text-align:right;
+    font-size:14px;
+}
+
+h1{
+    color:#ff7b00;
+    margin:0;
+}
+
+.client-box{
+    margin-top:20px;
+    border:1px solid #ccc;
+    padding:15px;
+    border-radius:8px;
+    background:#fafafa;
+}
+
+.client-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+}
+
+.client-grid input{
+    width:100%;
+    padding:6px;
+    border:1px solid #ccc;
+    border-radius:4px;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:15px;
+    table-layout:fixed;
+}
+
+th,td{
+    border:1px solid #ccc;
+    padding:6px;
+    font-size:14px;
+    text-align:center;
+}
+
+th:first-child, td:first-child{
+    text-align:left;
+    width:30%;
+}
+
+.desc-input{
+    width:100%;
+    border:none;
+    text-align:left;
+}
+
+input[type="number"]{
+    width:100%;
+    border:none;
+    text-align:center;
+}
+
+.totals{
+    width:50%;
+    float:right;
+    margin-top:20px;
+}
+
+.totals td{
+    border:none;
+    font-size:15px;
+    padding:4px;
+}
+
+.final{
+    font-weight:bold;
+    font-size:16px;
+    border-top:2px solid black;
+}
+
+.actions{
+    text-align:center;
+    margin-top:20px;
+}
+
+button{
+    background:#ff7b00;
+    color:white;
+    border:none;
+    padding:6px 12px;
+    margin:5px;
+    border-radius:6px;
+    cursor:pointer;
+}
+
+button:hover{
+    background:#e56e00;
+}
+
+@media print{
+    .actions, #logoInput{
+        display:none;
+    }
+    body{
+        margin:0;
+        background:white;
+    }
+    .invoice-container{
+        box-shadow:none;
+        width:190mm;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="invoice-container">
+
+<div class="header">
+
+<div class="logo-section">
+<input type="file" id="logoInput" accept="image/*" onchange="loadLogo(event)">
+<img id="logo" src="" alt="Logo">
+</div>
+
+<div>
+<h1>Devis - Solar Edge</h1>
+</div>
+
+<div class="company-info">
+<strong>Solar Edge</strong><br>
+Tel : +216 53 322 194<br>
+Email : solar.edgetn@gmail.com<br>
+Adresse : El Guettar - Gafsa<br>
+MF : 1932108/D
+</div>
+
+</div>
+<!-- NAVIGATION BUTTONS -->
+<div class="actions">
+    <button onclick="openPage('fact.html')">📄 Facture</button>
+    <button onclick="openPage('charge-client .html')">📝 Charge</button>
+    <button onclick="openPage('contrat.html')">📑 Contrat</button>
+    <button onclick="openPage('certificat.html')">📜 Certificat</button>
+</div>
+
+<!-- CLIENT INFO -->
+<div class="client-box">
+<div class="client-grid">
+<input type="text" placeholder="Nom" id="clientNom">
+<input type="text" placeholder="Prénom" id="clientPrenom">
+<input type="text" placeholder="CIN">
+<input type="text" placeholder="Numéro Téléphone">
+<input type="date">
+<input type="text" placeholder="Adresse">
+</div>
+</div>
+
+<!-- TABLE -->
+<table id="itemsTable">
+<thead>
+<tr>
+<th>Description</th>
+<th>Quantité</th>
+<th>Prix Unitaire</th>
+<th>Montant HT</th>
+<th>TVA (%)</th>
+<th>Total TTC</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody id="itemsBody">
+<!-- Rows seront générées par JS -->
+</tbody>
+</table>
+
+<div class="actions">
+<button onclick="addRow()">➕ Ajouter Produit</button>
+<button onclick="calculateTotal()">🔢 Calculer</button>
+<button onclick="window.print()">🖨️ Imprimer / PDF</button>
+</div>
+
+<!-- TOTALS -->
+<div class="totals">
+<table>
+<tr><td>Total HT :</td><td id="subTotal">0.00 DT</td></tr>
+<tr><td>Total TVA :</td><td id="tvaTotal">0.00 DT</td></tr>
+<tr><td>Timbre :</td><td id="timbre">1.00 DT</td></tr>
+<tr class="final"><td>Total TTC :</td><td id="grandTotal">0.00 DT</td></tr>
+</table>
+</div>
+
+<div style="clear:both"></div>
+
+<script>
+// Liste de tous les équipements PV
+const equipementsPV=[
+"Panneaux photovoltaïques","Structure métallique Fer I80 (mètre)","Tube carré 40x40 (mètre)",
+"Variateur / Onduleur","Câble solaire DC (mètre)","Sectionneur DC","Parafoudre DC",
+"Disjoncteur AC","Piquet de terre","Regard ou demi-regard","Cosse pour piquet",
+"Sert câble","Tube gorge","Boulon M8","Écrou M8","Rondelle M8","Pince intérieure",
+"Pince extérieure","Tirefond","Cheville","Boulon M5","Ventilateur 24V / 220V",
+"Rail aluminium (mètre)","Presse étoupe","Câble terre 16 mm (mètre)",
+"Câble 6 mm noir torsadé (mètre)","Câble 16 mm noir torsadé (mètre)",
+"Coffret 8 modules","Coffret 12 modules","Main d'œuvre installation",
+"Gazole / Transport","Amortissement véhicule"
+];
+
+// Générer toutes les lignes au chargement
+window.onload=function(){
+    equipementsPV.forEach(eq=>{
+        addRow(eq);
+    });
+}
+
+function loadLogo(event){
+    document.getElementById("logo").src =
+    URL.createObjectURL(event.target.files[0]);
+}
+
+function addRow(description=""){
+    const tbody=document.getElementById("itemsBody");
+    const row=tbody.insertRow();
+    row.innerHTML=`
+        <td><input class="desc-input" type="text" placeholder="Produit" value="${description}"></td>
+        <td><input type="number" value="1" onchange="calculateTotal()"></td>
+        <td><input type="number" value="0" onchange="calculateTotal()"></td>
+        <td class="montantHT">0.00</td>
+        <td><input type="number" value="19" onchange="calculateTotal()"></td>
+        <td class="totalTTC">0.00</td>
+        <td><button onclick="deleteRow(this)">❌</button></td>
+    `;
+}
+
+function deleteRow(btn){
+    btn.parentNode.parentNode.remove();
+    calculateTotal();
+}
+
+function calculateTotal(){
+    let subTotal=0;
+    let tvaTotal=0;
+    const timbre=1;
+
+    document.querySelectorAll("#itemsTable tbody tr").forEach(row=>{
+        const qty=parseFloat(row.cells[1].querySelector("input").value)||0;
+        const price=parseFloat(row.cells[2].querySelector("input").value)||0;
+        const tva=parseFloat(row.cells[4].querySelector("input").value)||0;
+
+        const montantHT=qty*price;
+        const tvaAmount=montantHT*(tva/100);
+        const totalTTC=montantHT+tvaAmount;
+
+        row.querySelector(".montantHT").textContent=montantHT.toFixed(2);
+        row.querySelector(".totalTTC").textContent=totalTTC.toFixed(2);
+
+        subTotal+=montantHT;
+        tvaTotal+=tvaAmount;
+    });
+
+    document.getElementById("subTotal").textContent=subTotal.toFixed(2)+" DT";
+    document.getElementById("tvaTotal").textContent=tvaTotal.toFixed(2)+" DT";
+    document.getElementById("timbre").textContent=timbre.toFixed(2)+" DT";
+    document.getElementById("grandTotal").textContent=
+    (subTotal+tvaTotal+timbre).toFixed(2)+" DT";
+}
+</script>
+
+</body>
+</html>

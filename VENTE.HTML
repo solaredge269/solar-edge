@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ventes Clients - TTC Direct</title>
+
+<style>
+body{
+    font-family: Arial, sans-serif;
+    margin:20px;
+    background:#f5f5f5;
+}
+
+.container{
+    background:#fff;
+    padding:25px;
+    max-width:950px;
+    margin:auto;
+    border-radius:10px;
+    box-shadow:0 0 10px rgba(0,0,0,0.15);
+}
+
+h1{
+    color:#ff7b00;
+}
+
+.form-section{
+    margin-bottom:20px;
+}
+
+.form-section input{
+    padding:6px;
+    margin:5px;
+    border:1px solid #ccc;
+    border-radius:4px;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:15px;
+}
+
+th, td{
+    border:1px solid #ccc;
+    padding:6px;
+    text-align:center;
+}
+
+th{
+    background:#0b3d91;
+    color:white;
+}
+
+td input{
+    width:95%;
+    border:none;
+    text-align:center;
+}
+
+.total-box{
+    margin-top:20px;
+    font-size:18px;
+    font-weight:bold;
+    text-align:right;
+}
+
+button{
+    background:#ff7b00;
+    color:white;
+    border:none;
+    padding:6px 12px;
+    margin:5px;
+    border-radius:6px;
+    cursor:pointer;
+}
+
+button:hover{
+    background:#e56e00;
+}
+
+@media print{
+    button{
+        display:none;
+    }
+    body{
+        margin:0;
+        background:white;
+    }
+    .container{
+        box-shadow:none;
+        width:190mm;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>Liste Ventes Clients (TTC Direct)</h1>
+
+<div class="form-section">
+<input type="text" id="nom" placeholder="Nom Client">
+<input type="text" id="cin" placeholder="CIN">
+<input type="text" id="tel" placeholder="Téléphone">
+<input type="text" id="adresse" placeholder="Adresse">
+<input type="date" id="date">
+<input type="number" id="ttc" placeholder="Montant TTC">
+<button onclick="addClient()">➕ Ajouter</button>
+</div>
+
+<table id="clientsTable">
+<thead>
+<tr>
+<th>Nom</th>
+<th>CIN</th>
+<th>Téléphone</th>
+<th>Adresse</th>
+<th>Date</th>
+<th>Montant TTC</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+</tbody>
+</table>
+
+<div class="total-box">
+Total Général TTC : <span id="totalGeneral">0.00</span> DT
+</div>
+
+<div style="text-align:center;">
+<button onclick="calculateTotal()">🔢 Calculer Total</button>
+<button onclick="window.print()">🖨️ Imprimer / PDF</button>
+</div>
+
+</div>
+
+<script>
+
+function addClient(){
+    const nom=document.getElementById("nom").value;
+    const cin=document.getElementById("cin").value;
+    const tel=document.getElementById("tel").value;
+    const adresse=document.getElementById("adresse").value;
+    const date=document.getElementById("date").value;
+    const ttc=parseFloat(document.getElementById("ttc").value)||0;
+
+    const tbody=document.querySelector("#clientsTable tbody");
+    const row=tbody.insertRow();
+
+    row.innerHTML=`
+        <td><input type="text" value="${nom}"></td>
+        <td><input type="text" value="${cin}"></td>
+        <td><input type="text" value="${tel}"></td>
+        <td><input type="text" value="${adresse}"></td>
+        <td><input type="date" value="${date}"></td>
+        <td><input type="number" value="${ttc}" onchange="calculateTotal()"></td>
+        <td><button onclick="deleteRow(this)">❌</button></td>
+    `;
+
+    calculateTotal();
+}
+
+function deleteRow(btn){
+    btn.parentNode.parentNode.remove();
+    calculateTotal();
+}
+
+function calculateTotal(){
+    let total=0;
+
+    document.querySelectorAll("#clientsTable tbody tr").forEach(row=>{
+        const ttc=parseFloat(row.cells[5].querySelector("input").value)||0;
+        total+=ttc;
+    });
+
+    document.getElementById("totalGeneral").textContent=total.toFixed(2);
+}
+
+</script>
+
+</body>
+</html>
